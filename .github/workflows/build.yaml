@@ -119,12 +119,21 @@ jobs:
         with:
           branch: gh-pages
           folder: gh-pages
-  docker:
-    runs-on: haskell:9.4.5
-    steps:
       -
         name: Checkout
         uses: actions/checkout@v3
+
+      - name: Build
+        if: |
+            github.ref == 'refs/heads/main'
+            && matrix.os == 'ubuntu-latest'
+            && matrix.ghc == '9.4.5'
+        run: >
+          cabal -v0 install
+                --enable-executable-static
+                --installdir=build
+                --overwrite-policy=always
+                --install-method=copy
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3

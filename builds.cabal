@@ -54,43 +54,43 @@ extra-doc-files:    CHANGELOG.md
 common warnings
     ghc-options: -Wall
 
-executable builds
-    -- Import common warning flags.
-    import:           warnings
+-- executable builds
+--     -- Import common warning flags.
+--     import:           warnings
 
-    -- .hs or .lhs file containing the Main module.
-    main-is:          Client.hs
+--     -- .hs or .lhs file containing the Main module.
+--     main-is:          Client.hs
 
-    -- Modules included in this executable, other than Main.
-    -- other-modules:
+--     -- Modules included in this executable, other than Main.
+--     -- other-modules:
 
-    -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
+--     -- LANGUAGE extensions used by modules in this package.
+--     -- other-extensions:
 
-    -- Other library packages from which modules are imported.
-    build-depends:
-        base
-        , aeson
-        , aeson-pretty
-        , http-streams
-        , http-types
-        , text
-        , bytestring
-        , containers
-        , io-streams
-        , json-stream
-        , servant
-        , servant-server
+--     -- Other library packages from which modules are imported.
+--     build-depends:
+--         base
+--         , aeson
+--         , aeson-pretty
+--         , http-streams
+--         , http-types
+--         , text
+--         , bytestring
+--         , containers
+--         , io-streams
+--         , json-stream
+--         , servant
+--         , servant-server
 
 
-    -- Directories containing source files.
-    hs-source-dirs:   app
+--     -- Directories containing source files.
+--     hs-source-dirs:   app
 
-    -- Base language which the package is written in.
-    default-language: Haskell2010
-    ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+--     -- Base language which the package is written in.
+--     default-language: Haskell2010
+--     ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
-executable builds-2
+executable buildkite-notification
     -- Import common warning flags.
     import:           warnings
 
