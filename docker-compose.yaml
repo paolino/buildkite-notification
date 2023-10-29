@@ -1,15 +1,22 @@
 services:
   webhook:
-    ports:
-      - "80:8091"
-    image: "builds/webhook:latest"
-    container_name: "webhooks"
+    image: "paolino/buildkite-notification:latest"
+    container_name: "buildkite-notification"
     restart: always
     networks:
         - web
+    ports:
+      - "8081:8081"
     labels:
-      - traefik.http.routers.builds-2.rule=(Host(`www.plutimus.com`) || Host (`plutimus.com`)) && Path(`/builds-2`)
-      - traefik.http.routers.builds-2.tls=true
-      - traefik.http.routers.builds-2.tls.certresolver=le
-      - traefik.http.middlewares.builds-2.compress=true
-      - traefik.http.routers.builds-2.middlewares=builds-2@docker
+
+
+      - "traefik.enable=true"
+      - "traefik.http.services.buildkite-notification.loadbalancer.server.port=8081"
+      - "traefik.http.routers.buildkite-notification.rule=Host(`plutimus.com`) && PathPrefix(`/buildkite-notification/`)"
+      - "traefik.http.middlewares.buildkite-notificationpre.stripprefix.prefixes=/buildkite-notification"
+      - "traefik.http.routers.buildkite-notification.tls=true"
+      - "traefik.http.routers.buildkite-notification.tls.certresolver=le"
+      - "traefik.http.routers.buildkite-notification.middlewares=buildkite-notificationpre"
+networks:
+    web:
+        external: true

@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -7,109 +6,73 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-import Data.Aeson (FromJSON, ToJSON)
+import Configuration (Configuration, loadConfiguration)
+import Control.Monad.IO.Class (liftIO)
 import Data.Aeson.Types ()
-import Data.List (intercalate)
-import GHC.Generics (Generic)
+import qualified Data.ByteString.Char8 as B
+import qualified Data.ByteString.Lazy.Char8 as BL
+import qualified Data.Map as Map
+import Data.Time (getCurrentTime)
+import Data.Yaml.Pretty (defConfig, encodePretty)
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger (logStdout)
+import Notification (NotificationOrValue (..))
 import Servant
-    ( Application
-    , Capture
-    , Get
-    , Handler
+    ( Capture
     , JSON
+    , NoContent (NoContent)
     , Post
     , Proxy (..)
-    , QueryParam
     , ReqBody
     , Server
     , serve
-    , type (:<|>) (..)
     , type (:>)
+    )
+import Slack (post)
+import System.Environment (getEnv)
+import System.IO
+    ( BufferMode (..)
+    , Handle
+    , IOMode (..)
+    , hSetBuffering
+    , stdout
+    , withFile
     )
 import Prelude
 
 type API =
-    "position" :> Capture "x" Int :> Capture "y" Int :> Get '[JSON] Position
-        :<|> "hello" :> QueryParam "name" String :> Get '[JSON] HelloMessage
-        :<|> "marketing" :> ReqBody '[JSON] ClientInfo :> Post '[JSON] Email
+    Capture "notification-id" String
+        :> ReqBody '[JSON] NotificationOrValue
+        :> Post '[JSON] NoContent
 
-data Position = Position
-    { xCoord :: Int
-    , yCoord :: Int
-    }
-    deriving (Generic)
-
-instance ToJSON Position
-
-newtype HelloMessage = HelloMessage {msg :: String}
-    deriving (Generic)
-
-instance ToJSON HelloMessage
-
-data ClientInfo = ClientInfo
-    { clientName :: String
-    , clientEmail :: String
-    , clientAge :: Int
-    , clientInterestedIn :: [String]
-    }
-    deriving (Generic)
-
-instance FromJSON ClientInfo
-
-instance ToJSON ClientInfo
-
-data Email = Email
-    { from :: String
-    , to :: String
-    , subject :: String
-    , body :: String
-    }
-    deriving (Generic)
-
-instance ToJSON Email
-
-emailForClient :: ClientInfo -> Email
-emailForClient c = Email from' to' subject' body'
-  where
-    from' = "great@company.com"
-    to' = clientEmail c
-    subject' = "Hey " ++ clientName c ++ ", we miss you!"
-    body' =
-        "Hi "
-            ++ clientName c
-            ++ ",\n\n"
-            ++ "Since you've recently turned "
-            ++ show (clientAge c)
-            ++ ", have you checked out our latest "
-            ++ intercalate ", " (clientInterestedIn c)
-            ++ " products? Give us a visit!"
-
-server3 :: Server API
-server3 =
-    position
-        :<|> hello
-        :<|> marketing
-  where
-    position :: Int -> Int -> Handler Position
-    position x y = return (Position x y)
-
-    hello :: Maybe String -> Handler HelloMessage
-    hello mname = return . HelloMessage $ case mname of
-        Nothing -> "Hello, anonymous coward"
-        Just n -> "Hello, " ++ n
-
-    marketing :: ClientInfo -> Handler Email
-    marketing clientinfo = return (emailForClient clientinfo)
+server :: Handle -> Configuration -> Server API
+server handle cfg s (NotificationOrValue v mn) = do
+    liftIO $ do
+        t <- BL.pack . show <$> getCurrentTime
+        BL.hPutStrLn handle $ "# Received on " <> t
+        B.hPutStrLn handle $ encodePretty defConfig v
+    case Map.lookup s cfg of
+        Nothing -> liftIO $ putStrLn $ "No configuration found for " ++ s
+        Just t -> do
+            case mn of
+                Just w -> do
+                    -- pPrint w
+                    -- pPrint $ renderNotification w
+                    -- liftIO $ BL.putStrLn $ encodePretty $ renderBlocks $ renderNotification w
+                    liftIO $ post t w
+                    liftIO $ putStrLn "Posted"
+                Nothing -> liftIO $ putStrLn "Failed to parse"
+    return NoContent
 
 userAPI :: Proxy API
 userAPI = Proxy
 
--- 'serve' comes from servant and hands you a WAI Application,
--- which you can think of as an "abstract" web application,
--- not yet a webserver.
-app3 :: Application
-app3 = serve userAPI server3
-
 main :: IO ()
-main = run 8081 app3
+main = do
+    configFile <- getEnv "SERVICE_CONFIG_FILE"
+    logInput <- getEnv "SERVICE_LOG_INPUT"
+    hSetBuffering stdout LineBuffering
+    configuration <- loadConfiguration configFile
+    withFile logInput AppendMode $ \handle -> do
+        hSetBuffering handle LineBuffering
+        run 8081 $ logStdout $ serve userAPI $ server handle configuration

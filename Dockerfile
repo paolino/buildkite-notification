@@ -1,5 +1,5 @@
-FROM 
+FROM ubuntu:latest
 
 WORKDIR /opt
-COPY build/builds-2 builds-2
-ENTRYPOINT /opt/builds-2
+COPY build/buildkite-notification buildkite-notification
+ENTRYPOINT /opt/buildkite-notification
