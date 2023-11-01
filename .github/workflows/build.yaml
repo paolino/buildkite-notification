@@ -93,24 +93,22 @@ jobs:
           --haddock-html-location
           'https://hackage.haskell.org/package/$pkg-$version/docs'
 
-      - name: Documentation (Staging)
-        if: |
-            github.ref == 'refs/heads/main'
+      # - name: Documentation (Staging)
+      #   if: |
+      #       github.ref == 'refs/heads/main'
 
-        run: >
-          mv ${{ env.cabal-build-dir }}/build/*/*/*/doc/html/* gh-pages
+      #   run: >
+      #     touch gh-pages/.nojekyll
 
-          touch gh-pages/.nojekyll
+      # - name: Documentation (Deployment)
+      #   if: |
+      #       github.ref == 'refs/heads/main'
 
-      - name: Documentation (Deployment)
-        if: |
-            github.ref == 'refs/heads/main'
-
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          branch: gh-pages
-          folder: gh-pages
-      - name: install
+      #   uses: JamesIves/github-pages-deploy-action@v4
+      #   with:
+      #     branch: gh-pages
+      #     folder: gh-pages
+      # - name: install
 
         run: >
           cabal -v0 install
