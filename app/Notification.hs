@@ -19,7 +19,7 @@ data Build = Build
     , web_url :: String
     , commit :: Maybe String
     , branch :: Maybe String
-    , creator :: Creator
+    , creator :: Maybe Creator
     , message :: String
     , number :: Int
     }
