@@ -108,7 +108,8 @@ jobs:
       #   with:
       #     branch: gh-pages
       #     folder: gh-pages
-      # - name: install
+
+      - name: install
 
         run: >
           cabal -v0 install
