@@ -7,6 +7,7 @@ install:
           --ghc-options=-Werror \
           --ghc-options=-Wall
 image: install
-    docker build -t builds-2 . -f Dockerfile.local
+    docker build -t paolino/buildkite-notification:experimental . -f Dockerfile.local
+    docker push paolino/buildkite-notification:experimental
 run: image
     docker run -p 8081:8081 --rm builds-2

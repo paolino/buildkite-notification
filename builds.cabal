@@ -119,6 +119,15 @@ executable buildkite-notification
         , servant-server
         , warp
         , wai
+        , wai-extra
+        , pretty-simple
+        , yaml
+        , req
+        , modern-uri
+        , free
+        , directory
+        , exceptions
+        , time
 
 
     -- Directories containing source files.
@@ -127,3 +136,7 @@ executable buildkite-notification
     -- Base language which the package is written in.
     default-language: Haskell2010
     ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+    other-modules:
+        Notification
+        Slack
+        Configuration

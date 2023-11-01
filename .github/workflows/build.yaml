@@ -15,28 +15,21 @@ on:
     - cron: 0 18 * * *
 jobs:
   build:
-    name: ${{ matrix.os }}-ghc-${{ matrix.ghc }}
-    runs-on: ${{ matrix.os }}
+    name: build-ghc-9.4.5
+    runs-on: ubuntu-latest
     env:
       cabal-build-dir: b
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-        cabal:
-          - 3.8.1.0
-        ghc:
-          - 9.4.5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Environment
-        uses: haskell/actions/setup@v2
+        uses: haskell-actions/setup@v2
         id: setup-haskell-cabal
         with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: ${{ matrix.cabal }}
+          ghc-version: 9.4.5
+          cabal-version: 3.8.1.0
 
       - name: Configure
         run: >
@@ -58,9 +51,9 @@ jobs:
         env:
           hash: ${{ hashFiles('cabal.project.freeze') }}
         with:
-          key: ${{ matrix.os }}-ghc-${{ matrix.ghc }}-${{ env.hash }}
+          key: build-ghc-9.4.5-${{ env.hash }}
           restore-keys: |
-            ${{ matrix.os }}-ghc-${{ matrix.ghc }}-
+            build-ghc-9.4.5-
           path: |
             ${{ steps.setup-haskell-cabal.outputs.cabal-store }}
             ${{ env.cabal-build-dir }}
@@ -103,8 +96,7 @@ jobs:
       - name: Documentation (Staging)
         if: |
             github.ref == 'refs/heads/main'
-            && matrix.os == 'ubuntu-latest'
-            && matrix.ghc == '9.6.2'
+
         run: >
           mv ${{ env.cabal-build-dir }}/build/*/*/*/doc/html/* gh-pages
 
@@ -113,30 +105,20 @@ jobs:
       - name: Documentation (Deployment)
         if: |
             github.ref == 'refs/heads/main'
-            && matrix.os == 'ubuntu-latest'
-            && matrix.ghc == '9.6.2'
+
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: gh-pages
-      -
-        name: Checkout
-        uses: actions/checkout@v3
+      - name: install
 
-      - name: Build
-        if: |
-            github.ref == 'refs/heads/main'
-            && matrix.os == 'ubuntu-latest'
-            && matrix.ghc == '9.4.5'
         run: >
           cabal -v0 install
-                --enable-executable-static
-                --installdir=build
-                --overwrite-policy=always
-                --install-method=copy
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+          --enable-executable-static
+          --installdir=build
+          --overwrite-policy=always
+          --install-method=copy
+
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -152,4 +134,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: user/app:latest
+          tags: paolino/buildkite-notification:latest
+
+# github.ref == 'refs/heads/main' &&
