@@ -33,8 +33,6 @@ import Notification
     , Event (..)
     , Notification (..)
     , Pipeline (..)
-    , Provider (..)
-    , Settings (..)
     , State (..)
     )
 import Text.URI (mkURI)
@@ -194,16 +192,9 @@ renderNotification
     Notification
         { pipeline =
             Pipeline
-                { description
-                , repository = _repository_link
-                , provider =
-                    Provider
-                        { id = _id'
-                        , settings = Settings{repository = _repository}
-                        }
+                { repository = _repository_link
                 }
         , build = Build{state = state, commit, branch, web_url}
-        , event
         } =
         [ RichTextBlock
             $ RichText
@@ -217,20 +208,18 @@ renderNotification
                         }
                     ]
                 ]
-        , SectionBlock
-            $ Section
-                { textSection =
-                    Just
-                        $ MarkdownText
-                        $ bold (renderEvent event)
-                            <> "\n"
-                            <> italic (T.pack description)
-                , fields =
-                    [ MarkdownText $ link (T.pack web_url) "Build"
-                    , MarkdownText $ T.pack $ missing commit
-                    ]
-                }
+        , simpleSection $ link (T.pack web_url) "Build"
+        , simpleSection $ T.pack $ missing commit
+        , simpleSection $ T.pack $ show state
         ]
+
+simpleSection :: Text -> Block
+simpleSection t =
+    SectionBlock
+        $ Section
+            { textSection = Just $ MarkdownText t
+            , fields = []
+            }
 
 renderEvent :: Event -> Text
 renderEvent BuildFailing = "Build is failing"
@@ -244,12 +233,12 @@ renderEvent JobFinished = "Job has finished"
 renderEvent (UnknownEvent x) = "Unknown event " <> x
 
 result :: State -> Text
-result Failed = ":large_red_square:"
-result Failing = ":large_red_square:"
-result Passed = ":large_green_square:"
-result Running = ":large_blue_square:"
-result Canceled = ":large_yellow_square:"
-result Blocked = ":large_yellow_square:"
+result Failed = "✗"
+result Failing = "✗"
+result Passed = "✓"
+result Running = "🏃"
+result Canceled = "⭘"
+result Blocked = "✓⭘"
 result (Unknown x) = ":question:" <> x
 
 -- <> [ SectionBlock
