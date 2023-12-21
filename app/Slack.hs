@@ -209,7 +209,10 @@ renderNotification
             $ RichText
                 [ RichTextSection
                     [ RichTextElement
-                        { textRichTextElement = T.pack $ missing branch
+                        { textRichTextElement =
+                            result state
+                                <> " "
+                                <> T.pack (missing branch)
                         , style = []
                         }
                     ]
@@ -219,9 +222,7 @@ renderNotification
                 { textSection =
                     Just
                         $ MarkdownText
-                        $ result state
-                            <> " "
-                            <> bold (renderEvent event)
+                        $ bold (renderEvent event)
                             <> "\n"
                             <> italic (T.pack description)
                 , fields =
