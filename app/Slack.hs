@@ -195,17 +195,25 @@ renderNotification
         { pipeline =
             Pipeline
                 { description
-                , repository = repository_link
+                , repository = _repository_link
                 , provider =
                     Provider
-                        { id = id'
-                        , settings = Settings{repository = repository}
+                        { id = _id'
+                        , settings = Settings{repository = _repository}
                         }
                 }
         , build = Build{state = state, commit, branch, web_url}
         , event
         } =
-        [ DividerBlock
+        [ RichTextBlock
+            $ RichText
+                [ RichTextSection
+                    [ RichTextElement
+                        { textRichTextElement = T.pack $ missing branch
+                        , style = []
+                        }
+                    ]
+                ]
         , SectionBlock
             $ Section
                 { textSection =
@@ -217,19 +225,8 @@ renderNotification
                             <> "\n"
                             <> italic (T.pack description)
                 , fields =
-                    [ PlainText "Provider"
-                    , PlainText $ T.pack id'
-                    , PlainText "Repository"
-                    , PlainText $ T.pack repository
-                    , PlainText "Commit"
-                    , PlainText $ T.pack $ missing commit
-                    , PlainText "Branch"
-                    , PlainText $ T.pack $ missing branch
-                    , MarkdownText $ link (T.pack web_url) "Build"
-                    , MarkdownText
-                        $ link
-                            (T.pack $ missing repository_link)
-                            "Repository"
+                    [ MarkdownText $ link (T.pack web_url) "Build"
+                    , MarkdownText $ T.pack $ missing commit
                     ]
                 }
         ]
