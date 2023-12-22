@@ -212,9 +212,12 @@ renderNotification
                         }
                     ]
                 ]
-        , simpleSection $ link (T.pack web_url) "Build"
-        , simpleSection $ T.pack $ missing commit
-        , simpleSection $ T.pack $ show state
+        , simpleSection
+            $ link (T.pack web_url) "Build"
+                <> " "
+                <> T.pack (missing commit)
+                <> " "
+                <> T.pack (show state)
         ]
 
 simpleSection :: Text -> Block
