@@ -194,7 +194,7 @@ renderNotification
             Pipeline
                 { repository = _repository_link
                 }
-        , build = Build{state = state, commit, branch, web_url}
+        , build = Build{state = state, branch}
         } =
         [ RichTextBlock
             $ RichText
