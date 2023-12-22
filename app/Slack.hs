@@ -35,11 +35,16 @@ import Notification
     , Notification (..)
     , Pipeline (..)
     , State (..)
+    , isNotCanceled
     )
 import Text.URI (mkURI)
 
 isInteresting :: Notification -> Bool
-isInteresting Notification{event = matchEvent -> t} = t
+isInteresting
+    Notification
+        { event = matchEvent -> t
+        , build = isNotCanceled . state -> t'
+        } = t && t'
 
 matchEvent :: Event -> Bool
 matchEvent BuildFailing = True

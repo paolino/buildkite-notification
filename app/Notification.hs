@@ -47,6 +47,10 @@ data State
     | Unknown Text
     deriving (Show, Generic)
 
+isNotCanceled :: State -> Bool
+isNotCanceled Canceled = False
+isNotCanceled _ = True
+
 instance FromJSON State where
     parseJSON = withText "State" $ \case
         "running" -> pure Running
@@ -74,6 +78,7 @@ data Notification = Notification
     , build :: Build
     }
     deriving (Show, Generic)
+
 
 instance FromJSON Notification
 
