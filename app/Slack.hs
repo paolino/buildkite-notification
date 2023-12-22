@@ -16,6 +16,7 @@ import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Aeson (KeyValue (..), Value (..), object)
 import Data.Aeson.Types (Pair)
 import Data.ByteString.Char8 as B (putStrLn)
+import Data.List (stripPrefix)
 import Data.String (IsString)
 import Data.Text as T (Text, pack)
 import Network.HTTP.Req
@@ -196,7 +197,7 @@ renderNotification
     Notification
         { pipeline =
             Pipeline
-                { repository = _repository_link
+                { repository = repository_link
                 }
         , build = Build{state = state, branch, commit, web_url}
         } =
@@ -215,7 +216,12 @@ renderNotification
         , simpleSection
             $ link (T.pack web_url) "Build"
                 <> " "
-                <> T.pack (missing commit)
+                <> T.pack
+                    ( missing $ do
+                        c <- commit
+                        l <- repository_link
+                        commitLink l c
+                    )
                 <> " "
                 <> T.pack (show state)
         ]
@@ -248,17 +254,6 @@ result Canceled = "⭘"
 result Blocked = "✓⭘"
 result (Unknown x) = ":question:" <> x
 
--- <> [ SectionBlock
---     $ Section
---         { textSection =
---             Just
---                 $ MarkdownText
---                 $ link (T.pack l) "Repository"
---         , fields = []
---         }
---    | l <- maybeToList repository_link
---    ]
-
 missing :: (IsString a) => Maybe a -> a
 missing Nothing = "-----"
 missing (Just x) = x
@@ -269,8 +264,7 @@ data Appenda a r where
 
 type AppendF a = Free (Appenda a)
 
-{-
-runAppenda = foldFree f
-    where
-        f Empty = []
-        f (Cons a r) = a : r -}
+commitLink :: [Char] -> [Char] -> Maybe [Char]
+commitLink x y = do
+    stripped <- stripPrefix (reverse ".git") $ reverse x
+    pure $ link (reverse stripped <> "/commit/" <> y) y
