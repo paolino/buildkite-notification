@@ -126,10 +126,14 @@ renderBlock :: Block -> Value
 renderBlock DividerBlock = object ["type" .= ("divider" :: Text)]
 renderBlock (SectionBlock s) =
     object
-        [ "type" .= ("section" :: Text)
-        , "text" .= (renderContent <$> textSection s)
-        , "fields" .= fmap renderContent (fields s)
-        ]
+        $ [ "type" .= ("section" :: Text)
+          , "text" .= (renderContent <$> textSection s)
+          ]
+            <> case fields s of
+                [] -> []
+                _ ->
+                    [ "fields" .= fmap renderContent (fields s)
+                    ]
 renderBlock (ContextBlock c) =
     object
         [ "type" .= ("context" :: Text)
@@ -194,7 +198,7 @@ renderNotification
             Pipeline
                 { repository = _repository_link
                 }
-        , build = Build{state = state, branch}
+        , build = Build{state = state, branch, commit, web_url}
         } =
         [ RichTextBlock
             $ RichText
@@ -208,9 +212,9 @@ renderNotification
                         }
                     ]
                 ]
-        -- , simpleSection $ link (T.pack web_url) "Build"
-        -- , simpleSection $ T.pack $ missing commit
-        -- , simpleSection $ T.pack $ show state
+        , simpleSection $ link (T.pack web_url) "Build"
+        , simpleSection $ T.pack $ missing commit
+        , simpleSection $ T.pack $ show state
         ]
 
 simpleSection :: Text -> Block
