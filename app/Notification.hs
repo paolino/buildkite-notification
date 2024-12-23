@@ -27,7 +27,6 @@ data Build = Build
 
 instance FromJSON Build
 
-
 data Creator = Creator
     { id :: String
     , name :: String
@@ -78,7 +77,6 @@ data Notification = Notification
     , build :: Build
     }
     deriving (Show, Generic)
-
 
 instance FromJSON Notification
 

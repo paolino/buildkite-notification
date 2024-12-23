@@ -1,8 +1,8 @@
-FROM ubuntu:latest
+FROM alpine:latest
 
+WORKDIR /app
 
-RUN apt-get update && apt-get install -y ca-certificates
-
-WORKDIR /opt
-COPY build/buildkite-notification buildkite-notification
-ENTRYPOINT /opt/buildkite-notification
+# Copy /nix/store
+COPY ./tmp /nix/store
+COPY ./tmp/buildkite-notification /app
+CMD ["/app/buildkite-notification"]

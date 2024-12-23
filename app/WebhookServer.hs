@@ -1,5 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -9,9 +10,9 @@
 import Configuration (Configuration, loadConfiguration)
 import Control.Monad.IO.Class (liftIO)
 import Data.Aeson.Types ()
-import qualified Data.ByteString.Char8 as B
-import qualified Data.ByteString.Lazy.Char8 as BL
-import qualified Data.Map as Map
+import Data.ByteString.Char8 qualified as B
+import Data.ByteString.Lazy.Char8 qualified as BL
+import Data.Map qualified as Map
 import Data.Time (getCurrentTime)
 import Data.Yaml.Pretty (defConfig, encodePretty)
 import Network.Wai.Handler.Warp (run)
@@ -60,6 +61,7 @@ server handle cfg s (NotificationOrValue v mn) = do
                     -- pPrint $ renderNotification w
                     -- liftIO $ BL.putStrLn $ encodePretty $ renderBlocks $ renderNotification w
                     liftIO $ post t w
+                    liftIO $ print w
                     liftIO $ putStrLn "Posted"
                 Nothing -> liftIO $ putStrLn "Failed to parse"
     return NoContent

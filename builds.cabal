@@ -101,7 +101,8 @@ executable buildkite-notification
     -- other-modules:
 
     -- LANGUAGE extensions used by modules in this package.
-    -- other-extensions:
+    other-extensions:
+        ImportQualifiedPost
 
     -- Other library packages from which modules are imported.
     build-depends:

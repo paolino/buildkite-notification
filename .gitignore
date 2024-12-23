@@ -1,2 +1,5 @@
 dist-newstyle/*
 build/*
+tmp/
+.direnv/
+result
